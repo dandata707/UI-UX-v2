@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ArrowRightLeft, Bookmark } from 'lucide-react';
+import { House, ArrowRightLeft, Bookmark, UserRound } from 'lucide-react';
 import { ScreenId } from '../types/wireframe';
 
 interface BottomNavProps {
@@ -13,14 +13,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onNavigate,
   compareCount = 0,
 }) => {
-  // Tab Bar 3 tab: TÌM XE · SO SÁNH (n) · ĐÃ LƯU
+  // Tab Bar: TRANG CHỦ · SO SÁNH (n) · ĐÃ LƯU · TÀI KHOẢN
   const isSearchActive =
+    activeScreenId === 'home' ||
+    activeScreenId === 'shop-bikes' ||
     activeScreenId === 'search' ||
     activeScreenId === 'calendar' ||
     activeScreenId === 'location' ||
     activeScreenId === 'results' ||
     activeScreenId === 'results-dropdown' ||
     activeScreenId === 'detail' ||
+    activeScreenId === 'booking' ||
+    activeScreenId === 'booking-success' ||
     activeScreenId === 'share-single';
 
   const isCompareActive =
@@ -30,20 +34,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     activeScreenId === 'share';
 
   const isSavedActive = activeScreenId === 'saved';
+  const isProfileActive = activeScreenId === 'profile' || activeScreenId === 'return-inspection' || activeScreenId === 'return-success' || activeScreenId === 'returned-order-detail' || activeScreenId === 'booked-order-detail' || activeScreenId === 'pickup-photos' || activeScreenId === 'pickup-success';
 
   const navItems = [
     {
-      id: 'search' as ScreenId,
-      label: 'TÌM XE',
-      icon: Search,
+      id: 'home' as ScreenId,
+      label: 'TRANG CHỦ',
+      icon: House,
       isActive: isSearchActive,
-      action: () => {
-        if (activeScreenId === 'search') {
-          onNavigate('results');
-        } else {
-          onNavigate('search');
-        }
-      },
+      action: () => onNavigate('home'),
     },
     {
       id: 'compare-3' as ScreenId,
@@ -67,6 +66,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       isActive: isSavedActive,
       action: () => onNavigate('saved'),
     },
+    {
+      id: 'profile' as ScreenId,
+      label: 'TÀI KHOẢN',
+      icon: UserRound,
+      isActive: isProfileActive,
+      action: () => onNavigate('profile'),
+    },
   ];
 
   return (
@@ -74,7 +80,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       aria-label="Bottom Navigation"
       className="shrink-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-1.5 z-30 select-none shadow-[0_-4px_16px_rgba(0,0,0,0.03)]"
     >
-      <div className="grid grid-cols-3 gap-2 items-center">
+      <div className="grid grid-cols-4 gap-1 items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.isActive;
@@ -84,7 +90,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               key={item.id}
               type="button"
               onClick={item.action}
-              className={`min-h-[50px] py-1 px-2 flex flex-col items-center justify-center relative rounded-xl transition-all duration-200 cursor-pointer ${
+              className={`min-h-[50px] py-1 px-1 flex flex-col items-center justify-center relative rounded-xl transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'bg-[var(--color-primary)] text-white shadow-md shadow-blue-950/20 scale-[1.02]'
                   : 'text-slate-600 hover:text-[var(--color-primary)] hover:bg-slate-100/80 active:scale-95'
@@ -106,7 +112,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 )}
               </div>
               <span
-                className={`text-[10px] uppercase tracking-wider font-semibold mt-1 transition-colors ${
+                className={`text-[9px] uppercase tracking-tight font-semibold mt-1 transition-colors whitespace-nowrap ${
                   isActive ? 'text-white' : 'text-slate-600'
                 }`}
               >

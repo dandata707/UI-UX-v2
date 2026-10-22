@@ -12,39 +12,49 @@ import {
 import { Shop, MotorbikeOption, EditableTextMap } from '../../types/wireframe';
 import { BIKE_IMAGES } from '../../data/bikeImages';
 import { WireframeImagePlaceholder } from '../WireframeBox';
+import { rentalDays, rentalTotal } from '../../utils/rental';
 
 interface DetailScreenProps {
   shop: Shop;
   option: MotorbikeOption;
+  pickupDate: string;
+  pickupTime: string;
+  returnDate: string;
+  returnTime: string;
+  quantity: number;
+  deliveryMode: 'delivery' | 'pickup';
   isEditMode: boolean;
   editableTexts: EditableTextMap;
   onTextChange: (id: string, text: string) => void;
   isPlaceholderMode: boolean;
-  isCompared: boolean;
-  compareCount: number;
-  onToggleCompare: (option: MotorbikeOption) => void;
   onOpenShareSheet: (isSingleBikeShare?: boolean) => void;
   onBack: () => void;
-  onGoToCompare: () => void;
+  onBook: () => void;
   wireframeStyle?: 'wireframe' | 'realistic';
 }
 
 export const DetailScreen: React.FC<DetailScreenProps> = ({
   shop,
   option,
+  pickupDate,
+  pickupTime,
+  returnDate,
+  returnTime,
+  quantity,
+  deliveryMode,
   isEditMode: _isEditMode,
   editableTexts: _editableTexts,
   onTextChange: _onTextChange,
   isPlaceholderMode,
-  isCompared,
-  compareCount,
-  onToggleCompare,
   onOpenShareSheet,
   onBack,
-  onGoToCompare,
+  onBook,
 }) => {
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [showCallPrompt, setShowCallPrompt] = useState(false);
+  const days = rentalDays(pickupDate, pickupTime, returnDate, returnTime);
+  const deliveryFee = deliveryMode === 'delivery' ? option.deliveryFee : 0;
+  const total = rentalTotal(option.dailyRate, days, quantity, option.deliveryFee, deliveryMode);
 
   const formatPrice = (price: number) => {
     if (isPlaceholderMode) return '000.000đ';
@@ -188,13 +198,13 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
             </div>
 
             <div className="flex justify-between text-slate-700 text-[11px]">
-              <span>- Giá thuê xe (2 ngày):</span>
-              <span className="font-bold text-slate-900">{formatPrice(option.dailyRate * 2)}</span>
+              <span>- Giá thuê xe ({days} ngày × {quantity} xe):</span>
+              <span className="font-bold text-slate-900">{formatPrice(option.dailyRate * days * quantity)}</span>
             </div>
 
             <div className="flex justify-between text-slate-700 text-[11px]">
               <span>- Phí giao nhận (Trung tâm):</span>
-              <span className="font-bold text-emerald-700">0đ (Miễn phí)</span>
+              <span className="font-bold text-slate-900">{formatPrice(deliveryFee)}</span>
             </div>
 
             <div className="flex justify-between text-slate-700 text-[11px]">
@@ -205,7 +215,7 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
             <div className="pt-2 border-t border-blue-900/15 flex justify-between items-baseline font-bold text-slate-900 text-xs">
               <span className="uppercase text-[var(--text-primary)]">TỔNG THANH TOÁN:</span>
               <span className="text-base font-extrabold text-[var(--color-primary)]">
-                {formatPrice(option.totalEstimate)}
+                {formatPrice(total)}
               </span>
             </div>
             <div className="text-[9px] text-slate-500 text-right">
@@ -263,7 +273,7 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
               <div className="font-bold text-sm text-[var(--text-primary)]">{shop.name}</div>
               <div className="text-xs font-semibold text-orange-600">Hotline: {shop.phone}</div>
               <div className="text-[11px] text-slate-500 pt-1">
-                Xe: {option.bikeName} (2 ngày • 280.000đ)
+                Xe: {option.bikeName} ({days} ngày · {formatPrice(total)})
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-2">
@@ -285,9 +295,7 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
         </div>
       )}
 
-      {/* Thanh nút dưới:
-          - 1 icon điện thoại nhỏ outline "Gọi shop" bên trái
-          - 1 nút chính rộng MÀU CAM: [ THÊM VÀO SO SÁNH ] -> [ XEM SO SÁNH (n) > ] */}
+      {/* Hành động liên hệ và đặt xe */}
       <div className="sticky bottom-0 px-3 z-20 mt-auto pb-2 bg-gradient-to-t from-white via-white to-transparent pt-3">
         <div className="bg-white border border-slate-200 p-2 rounded-2xl shadow-lg flex items-center gap-2.5">
           <button
@@ -300,23 +308,13 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
             <span>Gọi shop</span>
           </button>
 
-          {isCompared ? (
-            <button
-              type="button"
-              onClick={onGoToCompare}
-              className="flex-1 min-h-[48px] py-2.5 px-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-blue-900/30 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-wider"
-            >
-              <span>XEM SO SÁNH ({compareCount})</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onToggleCompare(option)}
-              className="flex-1 min-h-[48px] py-2.5 px-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-blue-900/30 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-wider"
-            >
-              <span>THÊM VÀO SO SÁNH</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onBook}
+            className="flex-1 min-h-[48px] py-2.5 px-4 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-blue-900/30 hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-wider"
+          >
+            <span>ĐẶT XE</span>
+          </button>
         </div>
       </div>
     </div>

@@ -55,12 +55,23 @@ export const CommentDrawer: React.FC<CommentDrawerProps> = ({
   if (!isOpen) return null;
 
   const screenNames: Record<ScreenId, string> = {
+    home: 'TRANG CHỦ',
+    'shop-bikes': 'DANH SÁCH XE CỦA CỬA HÀNG',
     search: 'MÀN 1 – TÌM XE',
     calendar: 'MÀN 1a – CHỌN THỜI GIAN',
     location: 'MÀN 1b – ĐIỂM GIAO NHẬN XE',
     results: 'MÀN 2 – DANH SÁCH KẾT QUẢ',
     'results-dropdown': 'MÀN 2a – DROPDOWN SẮP XẾP',
     detail: 'MÀN 3 – CHI TIẾT PHƯƠNG ÁN',
+    booking: 'MÀN 7 – ĐẶT XE',
+    'booking-success': 'MÀN 7a – ĐẶT XE THÀNH CÔNG',
+    'booked-order-detail': 'MÀN 8b – CHI TIẾT ĐƠN ĐÃ ĐẶT',
+    'pickup-photos': 'MÀN 8c – ẢNH XE LÚC NHẬN',
+    'pickup-success': 'MÀN 8c+ – NHẬN XE THÀNH CÔNG',
+    profile: 'MÀN 8 – TÀI KHOẢN',
+    'return-inspection': 'MÀN 8d – ĐỐI CHIẾU & TRẢ XE',
+    'return-success': 'MÀN 8e – TRẢ XE THÀNH CÔNG',
+    'returned-order-detail': 'MÀN 8f – CHI TIẾT ĐƠN ĐÃ TRẢ',
     'share-single': 'MÀN 3a – CHIA SẺ 1 XE',
     'compare-1': 'MÀN 4a – SO SÁNH 1 XE',
     'compare-2': 'MÀN 4b – SO SÁNH 2 XE',

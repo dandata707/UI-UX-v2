@@ -10,6 +10,7 @@ import {
 import { EditableText } from '../EditableText';
 import { EditableTextMap, SearchFilterState } from '../../types/wireframe';
 import brandBanner from '../../assets/dalat-ride-banner.png';
+import { rentalDays } from '../../utils/rental';
 
 interface SearchScreenProps {
   isEditMode: boolean;
@@ -28,6 +29,8 @@ interface SearchScreenProps {
   pickupTimeProp?: string;
   returnDateProp?: string;
   returnTimeProp?: string;
+  initialBikeType?: string;
+  initialQuantity?: number;
 }
 
 export const SearchScreen: React.FC<SearchScreenProps> = ({
@@ -44,18 +47,16 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
   pickupTimeProp = '08:00',
   returnDateProp = '20/10/2026',
   returnTimeProp = '08:00',
+  initialBikeType = 'Tất cả xe',
+  initialQuantity = 1,
 }) => {
   const [pickupDate, setPickupDate] = useState(pickupDateProp);
   const [pickupTime, setPickupTime] = useState(pickupTimeProp);
   const [returnDate, setReturnDate] = useState(returnDateProp);
   const [returnTime, setReturnTime] = useState(returnTimeProp);
-  const [selectedType, setSelectedType] = useState('Tất cả xe');
-  const [quantity, setQuantity] = useState(1);
-  const toDate = (value: string) => {
-    const [day, month, year] = value.split('/').map(Number);
-    return Date.UTC(year, month - 1, day);
-  };
-  const totalDays = Math.max(1, Math.round((toDate(returnDate) - toDate(pickupDate)) / 86400000));
+  const [selectedType, setSelectedType] = useState(initialBikeType);
+  const [quantity, setQuantity] = useState(initialQuantity);
+  const totalDays = rentalDays(pickupDate, pickupTime, returnDate, returnTime);
 
   React.useEffect(() => {
     setPickupDate(pickupDateProp);
@@ -63,6 +64,11 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     setReturnDate(returnDateProp);
     setReturnTime(returnTimeProp);
   }, [pickupDateProp, pickupTimeProp, returnDateProp, returnTimeProp]);
+
+  React.useEffect(() => {
+    setSelectedType(initialBikeType);
+    setQuantity(initialQuantity);
+  }, [initialBikeType, initialQuantity]);
 
   const bikeOptions = [
     'Tất cả xe',
@@ -131,7 +137,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
           <div className="text-[11px] leading-tight text-[var(--text-primary)] font-medium">
             <EditableText
               id="search_banner_tip"
-              defaultText="So sánh giá trọn gói và phí giao theo thời gian thực"
+              defaultText="Xem giá thuê và phí giao trước khi đặt xe"
               isEditMode={isEditMode}
               value={editableTexts['search_banner_tip']}
               onChange={onTextChange}
@@ -232,7 +238,9 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
               <span className="font-bold text-xs w-5 text-center text-[var(--text-primary)]">{quantity}</span>
               <button
                 type="button"
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={() => setQuantity(Math.min(20, quantity + 1))}
+                disabled={quantity === 20}
+                aria-label="Tăng số lượng xe, tối đa 20"
                 className="w-6 h-6 rounded-lg bg-white border border-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs cursor-pointer hover:bg-blue-50 hover:text-[var(--text-primary)] active:scale-95 transition-all"
               >
                 +

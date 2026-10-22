@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Clock, Calendar as CalendarIcon, Check } from 'lucide-react';
 import { EditableText } from '../EditableText';
 import { EditableTextMap } from '../../types/wireframe';
+import { rentalDays, vietnamToday } from '../../utils/rental';
 
 interface CalendarScreenProps {
   isEditMode: boolean;
@@ -71,10 +72,14 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
   const emptyDaysBefore = (new Date(Date.UTC(visibleYear, visibleMonthIndex, 1)).getUTCDay() + 6) % 7;
   const pickupDateValue = getDateValue(pickupDate);
   const returnDateValue = getDateValue(returnDate);
+  const todayValue = getDateValue(vietnamToday());
+  const timeValue = (value: string) => { const [hour, minute] = value.split(':').map(Number); return hour * 60 + minute; };
+  const validRange = returnDateValue + timeValue(returnTime) * 60000 > pickupDateValue + timeValue(pickupTime) * 60000;
 
   const handleSelectDay = (day: number) => {
     const selectedDate = formatDate(visibleYear, visibleMonthIndex, day);
     const selectedDateValue = Date.UTC(visibleYear, visibleMonthIndex, day);
+    if (selectedDateValue < todayValue) return;
 
     if (selectionStage === 'start') {
       setPickupDate(selectedDate);
@@ -90,9 +95,10 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
     }
   };
 
-  const totalDays = Math.max(1, Math.round((returnDateValue - pickupDateValue) / 86400000));
+  const totalDays = rentalDays(pickupDate, pickupTime, returnDate, returnTime);
 
   const handleDone = () => {
+    if (!validRange) return;
     onConfirm({
       pickupDate,
       pickupTime,
@@ -132,7 +138,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
               type="button"
               aria-label={`Xem ${formatMonth(previousMonth)}`}
               onClick={() => setVisibleMonth(previousMonth)}
-              className="min-w-0 truncate whitespace-nowrap text-left text-slate-400 hover:text-slate-600 cursor-pointer"
+              disabled={Date.UTC(previousMonth.getUTCFullYear(), previousMonth.getUTCMonth() + 1, 0) < todayValue}
+              className="min-w-0 truncate whitespace-nowrap text-left text-slate-400 hover:text-slate-600 disabled:opacity-30 cursor-pointer"
             >
               {formatMonth(previousMonth)}
             </button>
@@ -178,7 +185,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
                   key={day}
                   type="button"
                   onClick={() => handleSelectDay(day)}
-                  className={`h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-150 cursor-pointer ${
+                  disabled={dateValue < todayValue}
+                  className={`h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-150 cursor-pointer disabled:cursor-not-allowed disabled:opacity-25 ${
                     isStart || isEnd
                       ? 'bg-[var(--color-primary)] text-white shadow-sm scale-105'
                       : isInRange
@@ -262,6 +270,7 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
           <span className="text-[var(--text-primary)] font-medium">Tổng thời gian:</span>
           <span className="font-bold text-[var(--text-primary)]">{totalDays} ngày ({pickupDate} - {returnDate})</span>
         </div>
+        {!validRange && <p role="alert" className="text-[11px] font-semibold text-red-600">Giờ trả xe cần sau giờ nhận xe.</p>}
       </div>
 
       {/* Button hoàn tất: MÀU CAM NỔI BẬT */}
@@ -269,7 +278,8 @@ export const CalendarScreen: React.FC<CalendarScreenProps> = ({
         <button
           type="button"
           onClick={handleDone}
-          className="w-full min-h-[50px] bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-wider"
+          disabled={!validRange}
+          className="w-full min-h-[50px] bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-900/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-wider disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Check size={16} strokeWidth={2.5} />
           <span>XÁC NHẬN NGÀY &amp; GIỜ</span>

@@ -1,10 +1,21 @@
 export type ScreenId =
+  | 'home' // TRANG CHỦ
+  | 'shop-bikes' // XE CỦA CỬA HÀNG
   | 'search' // MÀN 1
   | 'calendar' // MÀN 1a
   | 'location' // MÀN 1b
   | 'results' // MÀN 2
   | 'results-dropdown' // MÀN 2a
   | 'detail' // MÀN 3
+  | 'booking' // MÀN ĐẶT XE
+  | 'booking-success' // MÀN ĐẶT XE THÀNH CÔNG
+  | 'booked-order-detail' // MÀN CHI TIẾT ĐƠN ĐÃ ĐẶT
+  | 'pickup-photos' // MÀN ẢNH XE LÚC NHẬN
+  | 'pickup-success' // MÀN NHẬN XE THÀNH CÔNG
+  | 'profile' // MÀN TÀI KHOẢN
+  | 'return-inspection' // MÀN ĐỐI CHIẾU & TRẢ XE
+  | 'return-success' // MÀN TRẢ XE THÀNH CÔNG
+  | 'returned-order-detail' // MÀN CHI TIẾT ĐƠN ĐÃ TRẢ
   | 'share-single' // MÀN 3a
   | 'compare-1' // MÀN 4a
   | 'compare-2' // MÀN 4b
@@ -54,6 +65,24 @@ export interface Shop {
   options: MotorbikeOption[];
   phone: string;
   freeCancellation: boolean;
+}
+
+export interface BookingOrder {
+  code: string;
+  bookedAt?: string;
+  shop: Shop;
+  option: MotorbikeOption;
+  quantity: number;
+  total: number;
+  renterName: string;
+  phone: string;
+  identity: string;
+  pickupDate: string;
+  pickupTime: string;
+  returnDate: string;
+  returnTime: string;
+  pickupLocation: string;
+  deliveryMode: 'delivery' | 'pickup';
 }
 
 export interface SearchFilterState {

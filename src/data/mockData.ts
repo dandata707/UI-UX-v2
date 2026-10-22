@@ -1,7 +1,24 @@
 import { Shop, CommentItem } from '../types/wireframe';
 import { BIKE_IMAGES } from './bikeImages';
 
-export const INITIAL_SHOPS: Shop[] = [
+type ExtraBike = Pick<Shop['options'][number], 'id' | 'bikeName' | 'bikeType' | 'engine' | 'dailyRate' | 'imageUrl'>;
+
+const extraBikesByShop: Record<string, ExtraBike[]> = {
+  'shop-1': [
+    { id: 'opt-1-3', bikeName: 'Honda Air Blade 125cc', bikeType: 'Tay ga', engine: '125cc', dailyRate: 160000, imageUrl: BIKE_IMAGES[1] },
+    { id: 'opt-1-4', bikeName: 'Yamaha Exciter 155cc', bikeType: 'Xe côn/Cào cào', engine: '155cc', dailyRate: 190000, imageUrl: BIKE_IMAGES[3] },
+  ],
+  'shop-3': [
+    { id: 'opt-3-2', bikeName: 'Honda Vision 110cc', bikeType: 'Tay ga', engine: '110cc', dailyRate: 130000, imageUrl: BIKE_IMAGES[0] },
+    { id: 'opt-3-3', bikeName: 'Honda Air Blade 125cc', bikeType: 'Tay ga', engine: '125cc', dailyRate: 170000, imageUrl: BIKE_IMAGES[1] },
+  ],
+  'shop-4': [
+    { id: 'opt-4-2', bikeName: 'Yamaha Exciter 150cc', bikeType: 'Xe côn/Cào cào', engine: '150cc', dailyRate: 180000, imageUrl: BIKE_IMAGES[3] },
+    { id: 'opt-4-3', bikeName: 'Xe cào cào 150cc', bikeType: 'Xe côn/Cào cào', engine: '150cc', dailyRate: 250000, imageUrl: BIKE_IMAGES[2] },
+  ],
+};
+
+const baseShops: Shop[] = [
   {
     id: 'shop-1',
     name: 'CỬA HÀNG MOTORBIKE ĐÀ LẠT 24H',
@@ -163,7 +180,7 @@ export const INITIAL_SHOPS: Shop[] = [
         ],
         pickupHours: '05:30 - 23:00',
         returnHours: 'Linh hoạt đến 22:30',
-        imageUrl: BIKE_IMAGES[0],
+        imageUrl: BIKE_IMAGES[3],
       },
     ],
   },
@@ -238,6 +255,26 @@ export const INITIAL_SHOPS: Shop[] = [
     ],
   },
 ];
+
+export const INITIAL_SHOPS: Shop[] = baseShops.map((shop) => ({
+  ...shop,
+  options: [
+    ...shop.options,
+    ...(extraBikesByShop[shop.id] ?? []).map((bike) => {
+      const totalEstimate = bike.dailyRate * 2 + shop.options[0].deliveryFee;
+      return {
+        ...shop.options[0],
+        ...bike,
+        shopId: shop.id,
+        totalEstimate,
+        preparationTotal: shop.id === 'shop-4'
+          ? `${new Intl.NumberFormat('vi-VN').format(totalEstimate + 1000000)}đ (gồm 1tr cọc)`
+          : `${new Intl.NumberFormat('vi-VN').format(totalEstimate)}đ`,
+        isRecommended: false,
+      };
+    }),
+  ],
+}));
 
 export const INITIAL_COMMENTS: CommentItem[] = [
   {

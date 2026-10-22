@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+@keyframes booking-success-appear {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pickup-celebrate-pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pickup-seal-pop {
+  0% { transform: scale(0.6) rotate(-12deg); }
+  65% { transform: scale(1.1) rotate(4deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes pickup-confetti-fall {
+  0% { opacity: 0; transform: translateY(-20px) rotate(0); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(145px) rotate(420deg); }
+}
+
+@keyframes pickup-sparkle-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .booking-success-enter { animation: booking-success-appear 320ms ease-out both; }
+  .pickup-success-card { animation: pickup-celebrate-pop 450ms ease-out both; }
+  .pickup-success-seal { animation: pickup-seal-pop 620ms 120ms ease-out both; }
+  .pickup-confetti { animation: pickup-confetti-fall 2s ease-out both; }
+  .pickup-sparkle { animation: pickup-sparkle-pulse 1.8s ease-in-out 3; }
+}
+
 :root {
   /* Google Maps blue */
   --color-primary: #1a73e8;

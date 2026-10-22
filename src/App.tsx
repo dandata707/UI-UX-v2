@@ -85,7 +85,7 @@ export default function App() {
   // Selected option for Detail view (Màn 3)
   const [selectedDetailOptionId, setSelectedDetailOptionId] = useState<string>('opt-1-1');
   const [selectedDetailShopId, setSelectedDetailShopId] = useState<string>('shop-1');
-  const [detailReturnScreen, setDetailReturnScreen] = useState<'results' | 'shop-bikes'>('results');
+  const [detailReturnScreen, setDetailReturnScreen] = useState<'results' | 'shop-bikes' | 'compare-1' | 'compare-2' | 'compare-3'>('results');
   const [bookingOrder, setBookingOrder] = useState<BookingOrder | null>(null);
   const [bookingOrders, setBookingOrders] = useState<BookingOrder[]>([]);
   const [pickupNote, setPickupNote] = useState('');
@@ -168,11 +168,6 @@ export default function App() {
     selectedOptionIds.length === savedOptionIds.length &&
     selectedOptionIds.every((id) => savedOptionIds.includes(id));
 
-  const fullCompareList: MotorbikeOption[] =
-    compareOptionsList.length > 0
-      ? compareOptionsList
-      : [allOptions[0], allOptions[2], allOptions[3]];
-
   // Interactive flow handlers
   const handleLocationSubmit = (loc: string, mode: 'delivery' | 'pickup') => {
     setPickupLocation(loc);
@@ -200,11 +195,16 @@ export default function App() {
     setActiveScreenId('results');
   };
 
-  const handleSelectOptionForDetail = (option: MotorbikeOption, shop: Shop, returnScreen: 'results' | 'shop-bikes' = 'results') => {
+  const handleSelectOptionForDetail = (option: MotorbikeOption, shop: Shop, returnScreen: 'results' | 'shop-bikes' | 'compare-1' | 'compare-2' | 'compare-3' = 'results') => {
     setSelectedDetailOptionId(option.id);
     setSelectedDetailShopId(shop.id);
     setDetailReturnScreen(returnScreen);
     setActiveScreenId('detail');
+  };
+
+  const handleSelectComparedOption = (option: MotorbikeOption, returnScreen: 'compare-1' | 'compare-2' | 'compare-3') => {
+    const shop = INITIAL_SHOPS.find((item) => item.id === option.shopId);
+    if (shop) handleSelectOptionForDetail(option, shop, returnScreen);
   };
 
   const handleGoToCompareScreen = () => {
@@ -393,16 +393,17 @@ export default function App() {
       case 'compare-1':
         return (
           <CompareScreen
-            options={fullCompareList}
+            options={compareOptionsList}
             shops={INITIAL_SHOPS}
             isEditMode={false}
             editableTexts={{}}
             onTextChange={() => {}}
             isPlaceholderMode={false}
             onRemoveOption={handleRemoveCompareOption}
+            onSelectOption={(option) => handleSelectComparedOption(option, 'compare-1')}
             onOpenShareSheet={() => setActivePopup('share')}
             onBack={() => setActiveScreenId('results')}
-            onAddMoreOptions={() => setActiveScreenId('results')}
+            onAddMoreOptions={() => setActiveScreenId('search')}
             forcedMode="two"
             isSavedInitial={isCurrentComparisonSaved}
             onToggleSavedGlobal={handleToggleComparisonSaved}
@@ -413,16 +414,17 @@ export default function App() {
       case 'compare-3':
         return (
           <CompareScreen
-            options={fullCompareList}
+            options={compareOptionsList}
             shops={INITIAL_SHOPS}
             isEditMode={false}
             editableTexts={{}}
             onTextChange={() => {}}
             isPlaceholderMode={false}
             onRemoveOption={handleRemoveCompareOption}
+            onSelectOption={(option) => handleSelectComparedOption(option, activeScreenId)}
             onOpenShareSheet={() => setActivePopup('share')}
             onBack={() => setActiveScreenId('results')}
-            onAddMoreOptions={() => setActiveScreenId('results')}
+            onAddMoreOptions={() => setActiveScreenId('search')}
             forcedMode="three"
             isSavedInitial={isCurrentComparisonSaved}
             onToggleSavedGlobal={handleToggleComparisonSaved}
@@ -486,10 +488,10 @@ export default function App() {
   };
 
   return (
-    <main className="grid h-dvh min-h-[520px] w-full grid-rows-[auto_minmax(0,1fr)_auto] justify-items-center gap-3 overflow-y-auto bg-[var(--canvas-bg)] p-3 text-slate-100 antialiased selection:bg-orange-500 selection:text-white md:p-6">
-      {/* Top Floating Screen Quick-Switcher Bar (Trực quan, tinh gọn) */}
-      <header className="prototype-switcher flex w-full max-w-2xl flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-blue-900/40 px-4 py-2 shadow-xl backdrop-blur-md">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-200 mr-2 shrink-0">
+    <main className="grid h-dvh min-h-[520px] w-full grid-rows-[auto_minmax(0,1fr)_auto] justify-items-center gap-3 overflow-y-auto bg-[var(--canvas-bg)] p-3 text-slate-100 antialiased selection:bg-orange-500 selection:text-white md:grid-cols-[248px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-6 md:p-6">
+      {/* Screen navigation on the left of the prototype */}
+      <aside aria-label="Điều khiển các màn hình" className="prototype-switcher flex w-full max-w-2xl flex-nowrap items-center justify-start gap-1.5 overflow-x-auto rounded-2xl border border-blue-900/40 px-3 py-2 shadow-xl backdrop-blur-md md:row-span-2 md:max-w-none md:min-h-0 md:flex-col md:items-stretch md:overflow-x-hidden md:overflow-y-auto md:px-3 md:py-4">
+        <div className="mr-2 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-blue-200 md:mb-2 md:mr-0 md:border-b md:border-white/20 md:px-2 md:pb-3">
           <Smartphone size={14} className="text-orange-400" />
           <span>Màn hình:</span>
         </div>
@@ -502,9 +504,10 @@ export default function App() {
             <button
               key={screen.id}
               onClick={() => navigateToScreen(screen.id)}
-              className={`px-3 py-1 text-xs font-medium rounded-xl transition-all duration-200 cursor-pointer ${
+              type="button"
+              className={`shrink-0 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer md:min-h-9 md:w-full md:text-left ${
                 isActive
-                  ? 'bg-white text-blue-800 font-bold shadow-md shadow-blue-950/20 scale-105'
+                  ? 'bg-white text-blue-800 font-bold shadow-md shadow-blue-950/20'
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
               }`}
             >
@@ -512,10 +515,10 @@ export default function App() {
             </button>
           );
         })}
-      </header>
+      </aside>
 
       {/* Main Single Centered Mobile Phone Prototype */}
-      <div className="relative flex min-h-0 w-full items-center justify-center">
+      <div className="relative flex min-h-0 w-full items-center justify-center md:col-start-2 md:row-start-1">
         <PhoneFrame
           screenId={activeScreenId}
           title="Đà Lạt Ride"
@@ -558,7 +561,7 @@ export default function App() {
                 />
               ) : activePopup === 'share' ? (
                 <ShareSheetScreen
-                  options={fullCompareList}
+                  options={compareOptionsList}
                   shops={INITIAL_SHOPS}
                   isEditMode={false}
                   editableTexts={{}}
@@ -587,7 +590,7 @@ export default function App() {
       </div>
 
       {/* Bottom Hint */}
-      <div className="flex items-center justify-center gap-1.5 text-center text-[11px] font-medium text-blue-200/60">
+      <div className="flex items-center justify-center gap-1.5 text-center text-[11px] font-medium text-blue-200/60 md:col-start-2 md:row-start-2">
         <Sparkles size={12} className="text-orange-400" />
         <span>Tương tác trực tiếp trên màn hình điện thoại như ứng dụng mobile thật</span>
       </div>

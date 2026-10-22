@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Bookmark,
   Check,
+  Search,
   Star,
 } from 'lucide-react';
 import { MotorbikeOption, Shop, EditableTextMap } from '../../types/wireframe';
@@ -17,6 +18,7 @@ interface CompareScreenProps {
   onTextChange: (id: string, text: string) => void;
   isPlaceholderMode: boolean;
   onRemoveOption?: (optionId: string) => void;
+  onSelectOption: (option: MotorbikeOption) => void;
   onOpenShareSheet: () => void;
   onBack: () => void;
   onAddMoreOptions: () => void;
@@ -34,8 +36,10 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
   onTextChange,
   isPlaceholderMode,
   onRemoveOption,
+  onSelectOption,
   onOpenShareSheet,
   onBack,
+  onAddMoreOptions,
   forcedMode = 'two',
   isSavedInitial = false,
   onToggleSavedGlobal,
@@ -61,7 +65,9 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
   const isTwo = count === 2;
   const isThree = count === 3;
   const isFour = count >= 4;
-  const comparisonColumns = isTwo
+  const comparisonColumns = count === 1
+    ? 'grid-cols-1'
+    : isTwo
     ? 'grid-cols-2'
     : isThree
     ? 'grid-cols-3'
@@ -118,6 +124,26 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
       </div>
 
       {/* Comparison Table: 8 DÒNG RÕ RÀNG */}
+      {count === 0 ? (
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-10 text-center">
+          <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-[var(--color-primary)] shadow-sm">
+            <Search size={30} strokeWidth={1.8} aria-hidden="true" />
+          </div>
+          <h2 className="text-base font-bold text-[var(--text-primary)]">Chưa có xe để so sánh</h2>
+          <p className="mt-2 max-w-[250px] text-sm leading-relaxed text-slate-500">
+            Tìm xe phù hợp và thêm vào bảng để dễ dàng lựa chọn.
+          </p>
+          <button
+            type="button"
+            onClick={onAddMoreOptions}
+            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 text-sm font-bold text-white shadow-md transition-colors hover:bg-[var(--color-primary-hover)]"
+          >
+            <Search size={17} aria-hidden="true" />
+            Tìm kiếm xe
+          </button>
+        </div>
+      ) : (
+      <>
       <div
         className={`flex-1 overflow-y-auto pb-28 p-2.5 ${
           isFour ? 'overflow-x-auto' : 'overflow-x-hidden'
@@ -136,7 +162,7 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
             >
               {displayOptions.map((opt) => (
                 <div key={opt.id} className="min-w-0 p-0.5 relative flex flex-col justify-center">
-                  {onRemoveOption && count > 2 && (
+                  {onRemoveOption && (
                     <button
                       onClick={() => onRemoveOption(opt.id)}
                       type="button"
@@ -146,13 +172,18 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
                       ✕
                     </button>
                   )}
-                  <div className={`w-full ${isThree ? 'h-16' : 'h-20'} rounded-lg overflow-hidden shadow-2xs`}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectOption(opt)}
+                    aria-label={`Xem chi tiết ${opt.bikeName}`}
+                    className={`w-full ${isThree ? 'h-16' : 'h-20'} rounded-lg overflow-hidden shadow-2xs cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]`}
+                  >
                     <WireframeImagePlaceholder
                       label="ẢNH"
                       imageUrl={opt.imageUrl}
                       alt={opt.bikeName}
                     />
-                  </div>
+                  </button>
                 </div>
               ))}
             </div>
@@ -167,9 +198,10 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
               className={`grid ${comparisonColumns} divide-x divide-slate-100 text-xs py-2 px-1 bg-white`}
             >
               {displayOptions.map((opt) => (
-                <div key={opt.id} className="min-w-0 px-1.5 font-bold text-[10px] text-[var(--text-primary)] leading-tight break-words">
+                <button key={opt.id} type="button" onClick={() => onSelectOption(opt)} className="min-w-0 px-1.5 text-left font-bold text-[10px] text-[var(--text-primary)] leading-tight break-words hover:text-[var(--color-primary)] focus-visible:outline-2 focus-visible:outline-[var(--color-primary)]">
                   {opt.bikeName}
-                </div>
+                  <span className="mt-1 block text-[9px] font-semibold text-[var(--color-primary)]">Xem chi tiết ›</span>
+                </button>
               ))}
             </div>
           </div>
@@ -295,7 +327,7 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
       </div>
 
       {/* THANH DƯỚI CỐ ĐỊNH: Nút [LƯU] và Nút chính [CHIA SẺ SO SÁNH] MÀU CAM */}
-      <div className="sticky bottom-0 px-3 z-20 mt-auto pb-2 bg-gradient-to-t from-white via-white to-transparent pt-3 shrink-0">
+      {count >= 2 && <div className="sticky bottom-0 px-3 z-20 mt-auto pb-2 bg-gradient-to-t from-white via-white to-transparent pt-3 shrink-0">
         <div className="bg-white border border-slate-200 p-2 rounded-2xl shadow-lg flex items-center gap-2">
           {/* Nút lưu */}
           <button
@@ -331,7 +363,9 @@ export const CompareScreen: React.FC<CompareScreenProps> = ({
             <span>CHIA SẺ SO SÁNH</span>
           </button>
         </div>
-      </div>
+      </div>}
+      </>
+      )}
     </div>
   );
 };

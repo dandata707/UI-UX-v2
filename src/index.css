@@ -43,6 +43,9 @@
   --color-primary-hover: #1557bf;
   --color-primary-deep: #0d47a1;
   --color-primary-surface: #e8f0fe;
+  --button-primary-gradient: linear-gradient(115deg, #1557bf 0%, #1a73e8 55%, #3984ef 100%);
+  --button-primary-gradient-hover: linear-gradient(115deg, #10479e 0%, #1765ce 55%, #2875dc 100%);
+  --button-soft-gradient: linear-gradient(115deg, #e0ecff 0%, #edf4ff 60%, #f5f9ff 100%);
 
   /* Đà Lạt map colors */
   --map-water-xuanhuong: #a5c8fc;
@@ -118,6 +121,30 @@
     var(--color-primary-gradient-mid),
     var(--color-primary-gradient-light)
   );
+}
+
+/* Shared blue button treatment, including nested CTA labels and upload actions. */
+:is(button, a, label)[class~="bg-[var(--color-primary)]"],
+button [class~="bg-[var(--color-primary)]"],
+:is(button, a, label):is([class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"]) {
+  background-image: var(--button-primary-gradient);
+}
+
+:is(button, a, label)[class~="bg-[var(--color-primary)]"]:not(:disabled):hover,
+button:not(:disabled):hover [class~="bg-[var(--color-primary)]"],
+:is(button, a, label):is([class~="bg-blue-500"], [class~="bg-blue-600"], [class~="bg-blue-700"]):not(:disabled):hover {
+  background-image: var(--button-primary-gradient-hover);
+}
+
+:is(button, a, label)[class~="bg-blue-50"],
+button [class~="bg-blue-50"] {
+  background-image: var(--button-soft-gradient);
+}
+
+button:disabled,
+button:disabled [class~="bg-[var(--color-primary)]"],
+button:disabled [class~="bg-blue-50"] {
+  background-image: none;
 }
 
 /* Keep every screen scrollable without showing browser or nested scrollbars. */

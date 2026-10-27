@@ -32,17 +32,15 @@ import { CompareScreen } from './components/screens/CompareScreen';
 import { ShareSheetScreen } from './components/screens/ShareSheetScreen';
 import { SavedScreen } from './components/screens/SavedScreen';
 import { BottomNav } from './components/BottomNav';
+import { AiAssistant } from './components/AiAssistant';
+import { Smartphone } from 'lucide-react';
 import { defaultRentalDates, vietnamDateTime } from './utils/rental';
-import {
-  Smartphone,
-  Sparkles,
-} from 'lucide-react';
 
 export default function App() {
   const [initialDates] = useState(defaultRentalDates);
   // Active Screen ID in interactive prototype
   const [activeScreenId, setActiveScreenId] = useState<ScreenId>('home');
-  const [activePopup, setActivePopup] = useState<'calendar' | 'location' | 'share' | 'share-single' | null>(null);
+  const [activePopup, setActivePopup] = useState<'calendar' | 'location' | 'share' | 'share-single' | 'ai' | null>(null);
   const closePopup = useCallback(() => setActivePopup(null), []);
 
   const navigateToScreen = (id: ScreenId) => {
@@ -260,6 +258,7 @@ export default function App() {
       case 'home':
         return (
           <HomeScreen
+            onOpenAssistant={() => setActivePopup('ai')}
             shops={INITIAL_SHOPS}
             pickupLocation={pickupLocation}
             pickupDate={pickupDate}
@@ -289,6 +288,7 @@ export default function App() {
       case 'search':
         return (
           <SearchScreen
+            onOpenAssistant={() => setActivePopup('ai')}
             isEditMode={false}
             editableTexts={{}}
             onTextChange={() => {}}
@@ -332,6 +332,7 @@ export default function App() {
       case 'detail':
         return (
           <DetailScreen
+            onOpenAssistant={() => setActivePopup('ai')}
             shop={currentDetailShop}
             option={currentDetailOption}
             pickupDate={pickupDate}
@@ -488,9 +489,9 @@ export default function App() {
   };
 
   return (
-    <main className="grid h-dvh min-h-[520px] w-full grid-rows-[auto_minmax(0,1fr)_auto] justify-items-center gap-3 overflow-y-auto bg-[var(--canvas-bg)] p-3 text-slate-100 antialiased selection:bg-orange-500 selection:text-white md:grid-cols-[248px_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-6 md:p-6">
+    <main className="grid h-dvh min-h-[520px] w-full grid-rows-[minmax(0,1fr)_auto] justify-items-center gap-3 overflow-y-auto bg-[var(--canvas-bg)] p-3 text-slate-100 antialiased selection:bg-orange-500 selection:text-white md:p-6">
       {/* Screen navigation on the left of the prototype */}
-      <aside aria-label="Điều khiển các màn hình" className="prototype-switcher flex w-full max-w-2xl flex-nowrap items-center justify-start gap-1.5 overflow-x-auto rounded-2xl border border-blue-900/40 px-3 py-2 shadow-xl backdrop-blur-md md:row-span-2 md:max-w-none md:min-h-0 md:flex-col md:items-stretch md:overflow-x-hidden md:overflow-y-auto md:px-3 md:py-4">
+      {false && <aside aria-label="Điều khiển các màn hình" className="prototype-switcher flex w-full max-w-2xl flex-nowrap items-center justify-start gap-1.5 overflow-x-auto rounded-2xl border border-blue-900/40 px-3 py-2 shadow-xl backdrop-blur-md md:row-span-2 md:max-w-none md:min-h-0 md:flex-col md:items-stretch md:overflow-x-hidden md:overflow-y-auto md:px-3 md:py-4">
         <div className="mr-2 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-blue-200 md:mb-2 md:mr-0 md:border-b md:border-white/20 md:px-2 md:pb-3">
           <Smartphone size={14} className="text-orange-400" />
           <span>Màn hình:</span>
@@ -515,10 +516,10 @@ export default function App() {
             </button>
           );
         })}
-      </aside>
+      </aside>}
 
       {/* Main Single Centered Mobile Phone Prototype */}
-      <div className="relative flex min-h-0 w-full items-center justify-center md:col-start-2 md:row-start-1">
+      <div className="relative flex min-h-0 w-full items-center justify-center">
         <PhoneFrame
           screenId={activeScreenId}
           title="Đà Lạt Ride"
@@ -533,13 +534,23 @@ export default function App() {
             <ScreenPopup
               key={activePopup}
               label={
+                activePopup === 'ai' ? 'Trợ lý AI tìm xe' :
                 activePopup === 'calendar' ? 'Chọn ngày' :
                 activePopup === 'location' ? 'Chọn điểm nhận' :
                 activePopup === 'share' ? 'Chia sẻ bảng so sánh' : 'Chia sẻ xe'
               }
               onClose={closePopup}
             >
-              {activePopup === 'calendar' ? (
+              {activePopup === 'ai' ? (
+                <AiAssistant
+                  shops={INITIAL_SHOPS}
+                  selectedOption={activeScreenId === 'detail' ? currentDetailOption : undefined}
+                  onSelectOption={(option, shop) => {
+                    closePopup();
+                    handleSelectOptionForDetail(option, shop, activeScreenId === 'shop-bikes' ? 'shop-bikes' : 'results');
+                  }}
+                />
+              ) : activePopup === 'calendar' ? (
                 <CalendarScreen
                   isEditMode={false}
                   editableTexts={{}}
@@ -590,10 +601,6 @@ export default function App() {
       </div>
 
       {/* Bottom Hint */}
-      <div className="flex items-center justify-center gap-1.5 text-center text-[11px] font-medium text-blue-200/60 md:col-start-2 md:row-start-2">
-        <Sparkles size={12} className="text-orange-400" />
-        <span>Tương tác trực tiếp trên màn hình điện thoại như ứng dụng mobile thật</span>
-      </div>
     </main>
   );
 }

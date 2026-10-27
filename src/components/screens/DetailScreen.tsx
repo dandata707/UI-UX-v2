@@ -8,11 +8,13 @@ import {
   ChevronLeft,
   Star,
   CheckCircle2,
+  MapPin,
 } from 'lucide-react';
 import { Shop, MotorbikeOption, EditableTextMap } from '../../types/wireframe';
 import { BIKE_IMAGES } from '../../data/bikeImages';
 import { WireframeImagePlaceholder } from '../WireframeBox';
 import { rentalDays, rentalTotal } from '../../utils/rental';
+import { AiAssistantEntry } from '../AiAssistant';
 
 interface DetailScreenProps {
   shop: Shop;
@@ -30,6 +32,7 @@ interface DetailScreenProps {
   onOpenShareSheet: (isSingleBikeShare?: boolean) => void;
   onBack: () => void;
   onBook: () => void;
+  onOpenAssistant: () => void;
   wireframeStyle?: 'wireframe' | 'realistic';
 }
 
@@ -49,6 +52,7 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
   onOpenShareSheet,
   onBack,
   onBook,
+  onOpenAssistant,
 }) => {
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [showCallPrompt, setShowCallPrompt] = useState(false);
@@ -156,29 +160,29 @@ export const DetailScreen: React.FC<DetailScreenProps> = ({
           </div>
         </div>
 
-        {/* Khối shop (tên, địa chỉ, ★ 4.9, đặc điểm) */}
-        <div className="border border-slate-200 p-3 bg-white rounded-2xl shadow-xs space-y-2">
-          <div className="flex items-start justify-between border-b border-slate-100 pb-2">
-            <div>
-              <div className="text-xs font-bold uppercase text-[var(--text-primary)]">
-                {shop.name}
-              </div>
-              <div className="text-[10px] text-slate-500 mt-0.5">
-                Địa chỉ: {shop.address}
-              </div>
-            </div>
-            <div className="text-right shrink-0">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-                <Star size={11} className="fill-amber-400 text-amber-500" />
+        {/* Tóm tắt cửa hàng */}
+        <section aria-label={`Thông tin ${shop.name}`} className="flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs">
+          <div className="h-15 w-21 shrink-0 overflow-hidden rounded-xl bg-blue-50">
+            <img src={shop.options[0]?.imageUrl} alt={shop.name} className="h-full w-full object-cover" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-1.5">
+              <h2 className="line-clamp-2 text-[11px] font-extrabold uppercase leading-4 text-[var(--text-primary)]">{shop.name}</h2>
+              <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-1.5 py-1 text-[9px] font-bold text-amber-700">
+                <Star size={10} className="fill-amber-400 text-amber-500" />
                 {shop.rating} ({shop.reviewCount})
               </span>
             </div>
+            <p className="mt-1 flex items-center gap-1 truncate text-[9px] text-slate-500">
+              <MapPin size={11} className="shrink-0 text-slate-400" />
+              <span className="truncate">{shop.address}</span>
+            </p>
+            <p className="mt-0.5 pl-4 text-[9px] text-slate-500">{shop.distanceKm} km từ vị trí của bạn</p>
           </div>
+          <ChevronRight size={18} className="shrink-0 text-slate-400" aria-hidden="true" />
+        </section>
 
-          <div className="text-[11px] text-[var(--text-secondary)] bg-blue-50/70 p-2 rounded-xl border border-blue-900/10 font-normal">
-            <span>ĐẶC ĐIỂM:</span> {shop.highlight}
-          </div>
-        </div>
+        <AiAssistantEntry onClick={onOpenAssistant} detail />
 
         {/* Khối xe & Bảng kê chi phí trọn gói */}
         <div className="border border-slate-200 p-3 bg-white rounded-2xl shadow-xs space-y-2.5">

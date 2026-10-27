@@ -11,12 +11,14 @@ import { EditableText } from '../EditableText';
 import { EditableTextMap, SearchFilterState } from '../../types/wireframe';
 import brandBanner from '../../assets/dalat-ride-banner.png';
 import { rentalDays } from '../../utils/rental';
+import { AiAssistantEntry } from '../AiAssistant';
 
 interface SearchScreenProps {
   isEditMode: boolean;
   editableTexts: EditableTextMap;
   onTextChange: (id: string, text: string) => void;
   onOpenCalendar: () => void;
+  onOpenAssistant: () => void;
   onOpenLocation: () => void;
   onSearchSubmit: (params: SearchFilterState) => void;
   isPlaceholderMode: boolean;
@@ -38,6 +40,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
   editableTexts,
   onTextChange,
   onOpenCalendar,
+  onOpenAssistant,
   onOpenLocation,
   onSearchSubmit,
   pickupLocation,
@@ -294,6 +297,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
 
       {/* NÚT CHÍNH DUY NHẤT: [ TÌM XE ] -> MÀU CAM NỔI BẬT với Hover & Shadow mượt mà */}
       <div className="pt-2 border-t border-slate-200 mt-auto">
+        <div className="mb-3"><AiAssistantEntry onClick={onOpenAssistant} /></div>
         <button
           type="button"
           onClick={handleSearchClick}

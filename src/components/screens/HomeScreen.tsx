@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, CalendarDays, ChevronRight, MapPin, Search, Star, Store } from 'lucide-react';
 import { Shop } from '../../types/wireframe';
-import brandBanner from '../../assets/dalat-ride-banner.png';
+import { AiAssistantEntry } from '../AiAssistant';
+import dalatPineLake from '../../assets/bikes/9d115a42-3bda-4ea7-89a4-f81512029f8a.png';
+import dalatWindmills from '../../assets/bikes/f17558ac-a70f-4e92-bcb5-4eb9fbc96407.png';
+import dalatMist from '../../assets/bikes/660eba09-1009-4a93-8b88-c7996a385e84.png';
+import dalatLake from '../../assets/bikes/0d2923f0-08c3-424b-984b-db04b7881562.png';
 
 interface HomeScreenProps {
   shops: Shop[];
@@ -10,14 +14,57 @@ interface HomeScreenProps {
   returnDate: string;
   quantity: number;
   onOpenSearch: () => void;
+  onOpenAssistant: () => void;
   onViewAll: () => void;
   onSelectShop: (shop: Shop) => void;
 }
 
 const money = (amount: number) => `${new Intl.NumberFormat('vi-VN').format(amount)}đ`;
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ shops, pickupLocation, pickupDate, returnDate, quantity, onOpenSearch, onViewAll, onSelectShop }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ shops, pickupLocation, pickupDate, returnDate, quantity, onOpenSearch, onOpenAssistant, onViewAll, onSelectShop }) => {
   const nearbyShops = [...shops].sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 3);
+  const [activeBanner, setActiveBanner] = useState(0);
+  const bannerSlides = [
+    {
+      eyebrow: 'TỰ DO KHÁM PHÁ',
+      title: <>Vi vu Đà Lạt<br />trên chiếc xe<br />yêu thích</>,
+      description: 'Chọn xe dễ dàng, khám phá thật vui.',
+      location: 'Đà Lạt, Lâm Đồng',
+      image: dalatPineLake,
+      overlay: 'from-slate-950/85 via-slate-900/35 to-transparent',
+    },
+    {
+      eyebrow: 'SẴN SÀNG LÊN ĐƯỜNG',
+      title: <>Chạm vào<br />mùa sương Đà Lạt</>,
+      description: 'Nhận xe nhanh, tự do đi theo cách của bạn.',
+      location: 'Đà Lạt, Lâm Đồng',
+      image: dalatWindmills,
+      overlay: 'from-cyan-950/85 via-blue-900/35 to-transparent',
+    },
+    {
+      eyebrow: 'HÀNH TRÌNH MỚI',
+      title: <>Lên đồi ngắm mây,<br />xuống phố thưởng hoa</>,
+      description: 'Một chiếc xe phù hợp cho mọi chuyến đi.',
+      location: 'Đà Lạt, Lâm Đồng',
+      image: dalatMist,
+      overlay: 'from-emerald-950/85 via-teal-900/35 to-transparent',
+    },
+    {
+      eyebrow: 'KHÁM PHÁ THEO CÁCH CỦA BẠN',
+      title: <>Bắt đầu chuyến đi<br />ngay hôm nay</>,
+      description: 'Nhiều lựa chọn xe, giá rõ ràng và tiện lợi.',
+      location: 'Đà Lạt, Lâm Đồng',
+      image: dalatLake,
+      overlay: 'from-indigo-950/85 via-violet-900/35 to-transparent',
+    },
+  ] as const;
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveBanner((current) => (current + 1) % bannerSlides.length);
+    }, 2000);
+    return () => window.clearInterval(intervalId);
+  }, [bannerSlides.length]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[var(--surface-app-bg)] text-[var(--text-primary)]">
@@ -27,14 +74,29 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ shops, pickupLocation, p
       </header>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3.5 pb-6">
-        <div className="relative h-28 overflow-hidden rounded-2xl bg-[var(--color-primary)] shadow-sm">
-          <img src={brandBanner} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-primary)]/80 via-[var(--color-primary)]/20 to-transparent" />
-          <div className="relative flex h-full max-w-[70%] flex-col justify-center px-4 text-white">
-            <h1 className="text-lg font-extrabold leading-tight">Vi vu Đà Lạt<br />trên chiếc xe bạn thích</h1>
-            <p className="mt-1 text-[10px] font-medium text-white/90">Chọn xe dễ dàng, khám phá thật vui.</p>
+        <section aria-label="Banner khám phá Đà Lạt" className="group relative h-40 overflow-hidden rounded-2xl bg-slate-950 shadow-md">
+          <div className="flex h-full transition-transform duration-700 ease-out" style={{ transform: `translateX(-${activeBanner * 100}%)` }}>
+            {bannerSlides.map((slide, index) => (
+              <article key={slide.eyebrow} aria-hidden={index !== activeBanner} className="relative h-full min-w-full overflow-hidden">
+                <img src={slide.image} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
+                <div className={`absolute inset-0 bg-gradient-to-r ${slide.overlay}`} />
+                <div className="relative flex h-full max-w-[72%] flex-col justify-center px-4 py-3 text-white">
+                  <span className="mb-1.5 w-fit rounded-full border border-white/45 bg-white/10 px-2 py-0.5 text-[8px] font-bold tracking-wide backdrop-blur-sm">{slide.eyebrow}</span>
+                  <h1 className="text-[19px] font-extrabold leading-[1.08] tracking-tight drop-shadow-sm">{slide.title}</h1>
+                  <p className="mt-1.5 text-[10px] font-medium leading-[1.35] text-white/90">{slide.description}</p>
+                </div>
+                <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full border border-white/30 bg-slate-950/45 px-2 py-1 text-[8px] font-semibold text-white backdrop-blur-sm"><MapPin size={10} />{slide.location}</span>
+              </article>
+            ))}
           </div>
-        </div>
+          <div className="absolute bottom-3 left-4 flex items-center gap-1.5" role="tablist" aria-label="Chọn slide banner">
+            {bannerSlides.map((slide, index) => (
+              <button key={slide.eyebrow} type="button" role="tab" aria-label={`Slide ${index + 1}`} aria-selected={index === activeBanner} onClick={() => setActiveBanner(index)} className={`h-1.5 rounded-full transition-all ${index === activeBanner ? 'w-5 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'}`} />
+            ))}
+          </div>
+        </section>
+
+        <AiAssistantEntry onClick={onOpenAssistant} />
 
         <section aria-label="Tìm xe thuê">
           <button type="button" onClick={onOpenSearch} className="w-full rounded-2xl border border-blue-900/15 bg-white p-4 text-left shadow-sm transition-transform hover:scale-[1.01] active:scale-[0.99]">

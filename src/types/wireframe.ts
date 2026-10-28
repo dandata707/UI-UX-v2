@@ -1,5 +1,6 @@
 export type ScreenId =
   | 'home' // TRANG CHỦ
+  | 'nemo' // TRỢ LÝ AI NEMO
   | 'shop-bikes' // XE CỦA CỬA HÀNG
   | 'search' // MÀN 1
   | 'calendar' // MÀN 1a

@@ -36,14 +36,23 @@ import { AiAssistant } from './components/AiAssistant';
 import { Smartphone } from 'lucide-react';
 import { defaultRentalDates, vietnamDateTime } from './utils/rental';
 
+type DetailReturnScreen = 'results' | 'shop-bikes' | 'compare-1' | 'compare-2' | 'compare-3' | 'nemo';
+
 export default function App() {
   const [initialDates] = useState(defaultRentalDates);
   // Active Screen ID in interactive prototype
   const [activeScreenId, setActiveScreenId] = useState<ScreenId>('home');
-  const [activePopup, setActivePopup] = useState<'calendar' | 'location' | 'share' | 'share-single' | 'ai' | null>(null);
+  const [activePopup, setActivePopup] = useState<'calendar' | 'location' | 'share' | 'share-single' | null>(null);
   const closePopup = useCallback(() => setActivePopup(null), []);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const closeSearch = useCallback(() => setIsSearchOpen(false), []);
+  const [nemoReturnScreen, setNemoReturnScreen] = useState<ScreenId>('home');
+  const [nemoContext, setNemoContext] = useState<MotorbikeOption | undefined>();
+  const [nemoQuery, setNemoQuery] = useState('');
+  const [nemoDetailReturn, setNemoDetailReturn] = useState<DetailReturnScreen>('results');
 
   const navigateToScreen = (id: ScreenId) => {
+    setIsSearchOpen(false);
     if (id === 'calendar' || id === 'location') {
       setActiveScreenId('search');
       setActivePopup(id);
@@ -83,7 +92,7 @@ export default function App() {
   // Selected option for Detail view (Màn 3)
   const [selectedDetailOptionId, setSelectedDetailOptionId] = useState<string>('opt-1-1');
   const [selectedDetailShopId, setSelectedDetailShopId] = useState<string>('shop-1');
-  const [detailReturnScreen, setDetailReturnScreen] = useState<'results' | 'shop-bikes' | 'compare-1' | 'compare-2' | 'compare-3'>('results');
+  const [detailReturnScreen, setDetailReturnScreen] = useState<DetailReturnScreen>('results');
   const [bookingOrder, setBookingOrder] = useState<BookingOrder | null>(null);
   const [bookingOrders, setBookingOrders] = useState<BookingOrder[]>([]);
   const [pickupNote, setPickupNote] = useState('');
@@ -188,12 +197,14 @@ export default function App() {
   };
 
   const handleSearchSubmit = (params: SearchFilterState) => {
+    closeSearch();
+    closePopup();
     setSearchFilters(params);
     setSelectedOptionIds([]);
     setActiveScreenId('results');
   };
 
-  const handleSelectOptionForDetail = (option: MotorbikeOption, shop: Shop, returnScreen: 'results' | 'shop-bikes' | 'compare-1' | 'compare-2' | 'compare-3' = 'results') => {
+  const handleSelectOptionForDetail = (option: MotorbikeOption, shop: Shop, returnScreen: DetailReturnScreen = 'results') => {
     setSelectedDetailOptionId(option.id);
     setSelectedDetailShopId(shop.id);
     setDetailReturnScreen(returnScreen);
@@ -252,19 +263,67 @@ export default function App() {
     ...(selectedReturnedOrder ? [{ id: 'returned-order-detail' as ScreenId, label: '8f. Chi tiết đơn đã trả' }] : []),
   ];
 
+  const openNemo = () => {
+    if (activeScreenId === 'detail' && detailReturnScreen === 'nemo') {
+      setNemoContext(currentDetailOption);
+      setNemoQuery('');
+      setActiveScreenId('nemo');
+      return;
+    }
+    setNemoReturnScreen(activeScreenId);
+    setNemoContext(activeScreenId === 'detail' ? currentDetailOption : undefined);
+    setNemoDetailReturn(detailReturnScreen);
+    setNemoQuery('');
+    closeSearch();
+    closePopup();
+    setActiveScreenId('nemo');
+  };
+
+  const leaveNemo = () => {
+    if (nemoReturnScreen === 'detail' && nemoContext) {
+      setSelectedDetailOptionId(nemoContext.id);
+      setSelectedDetailShopId(nemoContext.shopId);
+      setDetailReturnScreen(nemoDetailReturn);
+    }
+    setActiveScreenId(nemoReturnScreen);
+  };
+
+  const renderSearchForm = (compact = false) => (
+          <SearchScreen
+            compact={compact}
+            onOpenAssistant={openNemo}
+            isEditMode={false}
+            editableTexts={{}}
+            onTextChange={() => {}}
+            onOpenCalendar={() => setActivePopup('calendar')}
+            onOpenLocation={() => setActivePopup('location')}
+            onSearchSubmit={handleSearchSubmit}
+            isPlaceholderMode={false}
+            pickupLocation={pickupLocation}
+            deliveryMode={deliveryMode}
+            isLocationChosen={isLocationChosen}
+            pickupDateProp={pickupDate}
+            pickupTimeProp={pickupTime}
+            returnDateProp={returnDate}
+            returnTimeProp={returnTime}
+            initialBikeType={searchFilters.bikeType}
+            initialQuantity={searchFilters.quantity}
+          />
+  );
+
   // Render the active screen content inside the phone
   const renderScreenContent = () => {
     switch (activeScreenId) {
       case 'home':
         return (
           <HomeScreen
-            onOpenAssistant={() => setActivePopup('ai')}
+            onOpenAssistant={openNemo}
             shops={INITIAL_SHOPS}
             pickupLocation={pickupLocation}
             pickupDate={pickupDate}
             returnDate={returnDate}
             quantity={searchFilters.quantity}
-            onOpenSearch={() => setActiveScreenId('search')}
+            onOpenSearch={() => setIsSearchOpen(true)}
             onViewAll={() => { setSearchFilters((filters) => ({ ...filters, bikeType: 'Tất cả xe' })); setSelectedOptionIds([]); setActiveScreenId('results'); }}
             onSelectShop={(shop) => { setSelectedDetailShopId(shop.id); setActiveScreenId('shop-bikes'); }}
           />
@@ -286,25 +345,13 @@ export default function App() {
         );
 
       case 'search':
+        return renderSearchForm();
+
+      case 'nemo':
         return (
-          <SearchScreen
-            onOpenAssistant={() => setActivePopup('ai')}
-            isEditMode={false}
-            editableTexts={{}}
-            onTextChange={() => {}}
-            onOpenCalendar={() => setActivePopup('calendar')}
-            onOpenLocation={() => setActivePopup('location')}
-            onSearchSubmit={handleSearchSubmit}
-            isPlaceholderMode={false}
-            pickupLocation={pickupLocation}
-            deliveryMode={deliveryMode}
-            isLocationChosen={isLocationChosen}
-            pickupDateProp={pickupDate}
-            pickupTimeProp={pickupTime}
-            returnDateProp={returnDate}
-            returnTimeProp={returnTime}
-            initialBikeType={searchFilters.bikeType}
-            initialQuantity={searchFilters.quantity}
+          <AiAssistant shops={INITIAL_SHOPS} selectedOption={nemoContext} onBack={leaveNemo}
+            initialQuery={nemoQuery} onQueryChange={setNemoQuery}
+            onSelectOption={(option, shop) => handleSelectOptionForDetail(option, shop, 'nemo')}
           />
         );
 
@@ -332,7 +379,7 @@ export default function App() {
       case 'detail':
         return (
           <DetailScreen
-            onOpenAssistant={() => setActivePopup('ai')}
+            onOpenAssistant={openNemo}
             shop={currentDetailShop}
             option={currentDetailOption}
             pickupDate={pickupDate}
@@ -530,27 +577,22 @@ export default function App() {
               compareCount={selectedOptionIds.length}
             />
           }
-          overlay={activePopup ? (
+          overlay={activePopup || isSearchOpen ? (
+            <>
+            {isSearchOpen && <ScreenPopup label="Tìm xe cho chuyến đi" onClose={closeSearch} active={!activePopup}>
+              {renderSearchForm(true)}
+            </ScreenPopup>}
+            {activePopup && (
             <ScreenPopup
               key={activePopup}
               label={
-                activePopup === 'ai' ? 'Trợ lý AI tìm xe' :
                 activePopup === 'calendar' ? 'Chọn ngày' :
                 activePopup === 'location' ? 'Chọn điểm nhận' :
                 activePopup === 'share' ? 'Chia sẻ bảng so sánh' : 'Chia sẻ xe'
               }
               onClose={closePopup}
             >
-              {activePopup === 'ai' ? (
-                <AiAssistant
-                  shops={INITIAL_SHOPS}
-                  selectedOption={activeScreenId === 'detail' ? currentDetailOption : undefined}
-                  onSelectOption={(option, shop) => {
-                    closePopup();
-                    handleSelectOptionForDetail(option, shop, activeScreenId === 'shop-bikes' ? 'shop-bikes' : 'results');
-                  }}
-                />
-              ) : activePopup === 'calendar' ? (
+              {activePopup === 'calendar' ? (
                 <CalendarScreen
                   isEditMode={false}
                   editableTexts={{}}
@@ -594,6 +636,8 @@ export default function App() {
                 />
               )}
             </ScreenPopup>
+            )}
+            </>
           ) : undefined}
         >
           {renderScreenContent()}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, CalendarDays, ChevronRight, MapPin, Search, Star, Store } from 'lucide-react';
+import { ArrowRight, Bell, CalendarDays, ChevronRight, MapPin, Search, Star, Store } from 'lucide-react';
 import { Shop } from '../../types/wireframe';
 import { AiAssistantEntry } from '../AiAssistant';
 import dalatPineLake from '../../assets/bikes/9d115a42-3bda-4ea7-89a4-f81512029f8a.png';
@@ -68,9 +68,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ shops, pickupLocation, p
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[var(--surface-app-bg)] text-[var(--text-primary)]">
-      <header className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 shadow-xs">
-        <div className="text-sm font-extrabold tracking-tight text-[var(--color-primary)]">ĐÀ LẠT RIDE</div>
-        <div className="mt-0.5 text-[10px] text-[var(--text-secondary)]">Khám phá Đà Lạt theo cách của bạn</div>
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 shadow-xs">
+        <div className="min-w-0">
+          <div className="text-[24px] font-extrabold leading-tight tracking-tight text-[var(--color-primary)]">ĐÀ LẠT RIDE</div>
+          <div className="mt-1 text-[10px] text-[var(--text-secondary)]">Khám phá Đà Lạt theo cách của bạn</div>
+        </div>
+        <span role="img" aria-label="Thông báo" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-[var(--color-primary)]">
+          <Bell size={23} strokeWidth={1.8} aria-hidden="true" />
+        </span>
       </header>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3.5 pb-6">

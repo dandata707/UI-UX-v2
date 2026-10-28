@@ -33,6 +33,7 @@ interface SearchScreenProps {
   returnTimeProp?: string;
   initialBikeType?: string;
   initialQuantity?: number;
+  compact?: boolean;
 }
 
 export const SearchScreen: React.FC<SearchScreenProps> = ({
@@ -52,6 +53,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
   returnTimeProp = '08:00',
   initialBikeType = 'Tất cả xe',
   initialQuantity = 1,
+  compact = false,
 }) => {
   const [pickupDate, setPickupDate] = useState(pickupDateProp);
   const [pickupTime, setPickupTime] = useState(pickupTimeProp);
@@ -100,7 +102,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
   return (
     <div className="flex-1 flex flex-col justify-between p-3.5 bg-[var(--surface-app-bg)] text-slate-900 select-none">
       {/* Brand banner stays visible while the search form scrolls. */}
-      <div className="sticky top-0 z-20 -mx-3.5 -mt-3.5 bg-[var(--surface-app-bg)] px-3.5 pb-2 pt-3.5">
+      {compact ? <header className="pb-3 pr-12 pt-2"><h1 className="text-base font-extrabold">Tìm xe cho chuyến đi</h1><p className="mt-1 text-[11px] text-slate-500">Chọn lịch trình, loại xe và điểm nhận.</p></header> : <div className="sticky top-0 z-20 -mx-3.5 -mt-3.5 bg-[var(--surface-app-bg)] px-3.5 pb-2 pt-3.5">
         <div className="relative h-[102px] overflow-hidden rounded-2xl bg-[var(--color-primary)] shadow-sm">
           <img
             src={brandBanner}
@@ -129,8 +131,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
             />
           </div>
         </div>
-      </div>
-
+      </div>}
       {/* Banner nhỏ: "So sánh giá trọn gói và phí giao theo thời gian thực" */}
       <div className="mb-1">
         <div className="border border-blue-900/20 bg-blue-50/80 p-2.5 rounded-xl text-xs flex items-center gap-2.5 shadow-2xs hover:bg-blue-50 transition-colors">
@@ -297,7 +298,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
 
       {/* NÚT CHÍNH DUY NHẤT: [ TÌM XE ] -> MÀU CAM NỔI BẬT với Hover & Shadow mượt mà */}
       <div className="pt-2 border-t border-slate-200 mt-auto">
-        <div className="mb-3"><AiAssistantEntry onClick={onOpenAssistant} /></div>
+        {!compact && <div className="mb-3"><AiAssistantEntry onClick={onOpenAssistant} /></div>}
         <button
           type="button"
           onClick={handleSearchClick}

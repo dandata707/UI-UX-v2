@@ -55,6 +55,7 @@ export const CommentDrawer: React.FC<CommentDrawerProps> = ({
   if (!isOpen) return null;
 
   const screenNames: Record<ScreenId, string> = {
+    nemo: 'Trợ lý AI Nemo',
     home: 'TRANG CHỦ',
     'shop-bikes': 'DANH SÁCH XE CỦA CỬA HÀNG',
     search: 'MÀN 1 – TÌM XE',

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Bike, CalendarDays, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock3, CreditCard, X } from 'lucide-react';
+import { CalendarDays, Camera, CheckCircle2, ChevronLeft, ChevronRight, Clock3, CreditCard, X } from 'lucide-react';
 import { ProfileOrder } from './ProfileScreen';
-import { formatMoney } from '../../utils/rental';
+import { OrderBikeSummary, OrderDetailHeader, OrderSchedule, OrderSection, OrderStatusHero, OrderTotal } from '../OrderDetailParts';
 
 interface ReturnedOrderDetailScreenProps {
   order: ProfileOrder;
@@ -38,35 +38,34 @@ export const ReturnedOrderDetailScreen: React.FC<ReturnedOrderDetailScreenProps>
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col bg-[var(--surface-app-bg)] text-[var(--text-primary)]">
-      <header className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2.5 shadow-xs">
-        <button type="button" onClick={onBack} aria-label="Quay lại đơn đã trả" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-primary)] hover:bg-blue-50"><ArrowLeft size={18} /></button>
-        <h1 className="min-w-0 flex-1 text-[11px] font-bold uppercase tracking-wide">Chi tiết đơn đã trả</h1>
-        <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-[var(--color-success-green)]">Đã trả</span>
-      </header>
+      <OrderDetailHeader title="Chi tiết đơn đã trả" onBack={onBack} />
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 pb-6">
-        <div className="rounded-2xl bg-[var(--color-primary)] p-3.5 text-white shadow-sm">
-          <p className="text-[10px] text-white/80">Mã đơn thuê</p>
-          <p className="mt-0.5 text-sm font-extrabold">{order.code}</p>
-          <p className="mt-2 text-[10px] text-white/85">{order.shopName}</p>
-        </div>
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 pb-6">
+        <OrderStatusHero code={order.code} completed bookedAt={order.bookedAt} />
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs" aria-label="Thông tin đặt xe">
-          <h2 className="flex items-center gap-2 border-b border-slate-100 pb-2.5 text-[11px] font-bold uppercase tracking-wide text-[var(--color-primary)]"><CalendarDays size={16} /> 1. Thông tin đặt xe</h2>
-          <dl className="mt-3 space-y-3 text-[11px]">
-            <div className="flex justify-between gap-3"><dt className="text-[var(--text-secondary)]">Thời gian đặt</dt><dd className="text-right font-semibold">{order.bookedAt ?? 'Chưa ghi nhận'}</dd></div>
-            <div className="flex items-start gap-2 border-t border-slate-100 pt-2.5"><Bike size={15} className="mt-0.5 shrink-0 text-[var(--color-primary)]" /><div><dt className="text-[10px] text-[var(--text-secondary)]">Xe / loại xe</dt><dd className="mt-0.5 font-bold">{order.bikeName}</dd><dd className="mt-0.5 text-[var(--text-secondary)]">{order.bikeType ?? 'Chưa cập nhật loại xe'}</dd></div></div>
-            <div className="flex justify-between gap-3"><dt className="text-[var(--text-secondary)]">Số lượng</dt><dd className="font-semibold">{order.quantity ?? 1} xe</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-[var(--text-secondary)]">Thời gian thuê dự kiến</dt><dd className="max-w-[58%] text-right font-semibold">{order.timeRange ?? order.dates}</dd></div>
-            <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2.5"><dt className="flex items-center gap-1.5 font-semibold"><CreditCard size={15} className="text-[var(--color-primary)]" /> Giá đặt xe</dt><dd className="text-sm font-extrabold text-[var(--color-primary)]">{formatMoney(order.total)}</dd></div>
-          </dl>
-        </section>
+        <OrderSection title="Xe & lịch trình" icon={<CalendarDays size={16} />}>
+          <OrderBikeSummary name={order.bikeName} type={order.bikeType} quantity={order.quantity ?? 1} />
+          <div className="mt-4 border-t border-slate-100 pt-4"><OrderSchedule range={order.timeRange ?? order.dates} place={order.pickupLocation} deliveryMode={order.deliveryMode} /></div>
+          <div className="mt-4 border-t border-slate-100 pt-3"><p className="text-[10px] text-slate-500">Cửa hàng cho thuê</p><p className="mt-1 text-[11px] font-semibold leading-5">{order.shopName}</p></div>
+        </OrderSection>
+
+        <OrderSection title="Lịch sử hành trình" icon={<Clock3 size={16} />}>
+          <ol>{[
+            { label: 'Đặt xe', time: order.bookedAt },
+            { label: 'Nhận xe', time: order.receivedAt },
+            { label: 'Trả xe', time: order.returnedAt },
+          ].map((event, index) => <li key={event.label} className="relative flex gap-3 pb-4 last:pb-0">
+            {index < 2 && <span aria-hidden="true" className="absolute bottom-0 left-[11px] top-6 w-px bg-slate-200" />}
+            <span className={`relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${event.time ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>{event.time ? <CheckCircle2 size={14} /> : <Clock3 size={13} />}</span>
+            <div className="flex min-w-0 flex-1 items-start justify-between gap-3 pt-0.5"><span className="text-[11px] font-semibold">{event.label}</span><span className="text-right text-[10px] leading-4 text-slate-500">{event.time ?? 'Chưa ghi nhận'}</span></div>
+          </li>)}</ol>
+        </OrderSection>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs" aria-label="Thông tin nhận xe">
-          <h2 className="flex items-center gap-2 border-b border-slate-100 pb-2.5 text-[11px] font-bold uppercase tracking-wide text-[var(--color-primary)]"><Camera size={16} /> 2. Nhận xe</h2>
-          <p className="mt-3 flex items-center gap-1.5 text-[11px]"><Clock3 size={14} className="text-[var(--color-primary)]" /><span className="text-[var(--text-secondary)]">Thời gian nhận:</span> <strong>{order.receivedAt ?? 'Chưa ghi nhận'}</strong></p>
+          <h2 className="flex items-center gap-2 text-[13px] font-bold"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-[var(--color-primary)]"><Camera size={16} /></span>Ảnh bàn giao xe</h2>
+          <p className="mt-2 text-[11px] leading-5 text-slate-500">Hình ảnh lúc nhận để tham khảo và đối chiếu sau hành trình.</p>
           <div className="mt-3 border-t border-slate-100 pt-3">
-            <h3 className="text-[10px] font-bold uppercase tracking-wide">Ảnh lúc nhận xe {photos.length > 0 && `(${photos.length})`}</h3>
+            <h3 className="text-[11px] font-semibold">Ảnh lúc nhận xe {photos.length > 0 && `· ${photos.length} ảnh`}</h3>
             {photos.length > 0 ? (
               <>
                 <button type="button" onClick={(event) => openPhoto(selectedPhoto, event.currentTarget)} aria-label={`Phóng to ảnh ${photoLabels[selectedPhoto] ?? selectedPhoto + 1}`} className="mt-2 block w-full overflow-hidden rounded-xl border border-slate-200 bg-blue-50"><img src={photos[selectedPhoto]} alt={`Ảnh xe lúc nhận: ${photoLabels[selectedPhoto] ?? `Ảnh ${selectedPhoto + 1}`}`} className="h-44 w-full object-contain" /></button>
@@ -78,10 +77,11 @@ export const ReturnedOrderDetailScreen: React.FC<ReturnedOrderDetailScreenProps>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-emerald-600/20 bg-white p-3.5 shadow-xs" aria-label="Thông tin trả xe">
-          <h2 className="flex items-center gap-2 border-b border-slate-100 pb-2.5 text-[11px] font-bold uppercase tracking-wide text-[var(--color-success-green)]"><CheckCircle2 size={16} /> 3. Trả xe</h2>
-          <div className="mt-3 flex justify-between gap-3 text-[11px]"><span className="text-[var(--text-secondary)]">Thời gian trả</span><strong className="text-right">{order.returnedAt ?? 'Chưa ghi nhận'}</strong></div>
-        </section>
+        <OrderSection title="Chi phí đơn thuê" icon={<CreditCard size={16} />}>
+          <OrderTotal amount={order.total} completed />
+          {order.deposit && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3"><p className="text-[10px] font-bold text-amber-800">Điều kiện cọc theo đơn</p><p className="mt-1 text-[11px] leading-5 text-amber-900">{order.deposit}</p></div>}
+          <p className="mt-3 text-[10px] leading-5 text-slate-500">Trạng thái trả xe được ghi nhận trong bản mẫu. Thanh toán và hoàn cọc thực tế cần cửa hàng xác nhận.</p>
+        </OrderSection>
       </div>
 
       {lightboxOpen && photos.length > 0 && (

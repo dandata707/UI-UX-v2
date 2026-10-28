@@ -16,6 +16,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   // Tab Bar: TRANG CHỦ · SO SÁNH (n) · ĐÃ LƯU · TÀI KHOẢN
   const isSearchActive =
     activeScreenId === 'home' ||
+    activeScreenId === 'nemo' ||
     activeScreenId === 'shop-bikes' ||
     activeScreenId === 'search' ||
     activeScreenId === 'calendar' ||

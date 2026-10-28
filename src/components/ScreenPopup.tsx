@@ -5,12 +5,14 @@ interface ScreenPopupProps {
   label: string;
   onClose: () => void;
   children: React.ReactNode;
+  active?: boolean;
 }
 
-export const ScreenPopup: React.FC<ScreenPopupProps> = ({ label, onClose, children }) => {
+export const ScreenPopup: React.FC<ScreenPopupProps> = ({ label, onClose, children, active = true }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!active) return;
     const previousFocus = document.activeElement;
     dialogRef.current?.focus();
 
@@ -41,10 +43,12 @@ export const ScreenPopup: React.FC<ScreenPopupProps> = ({ label, onClose, childr
       document.removeEventListener('keydown', handleKeyDown);
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
-  }, [onClose]);
+  }, [onClose, active]);
 
   return (
     <div
+      inert={!active ? true : undefined}
+      aria-hidden={!active ? true : undefined}
       className="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-[2px]"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
